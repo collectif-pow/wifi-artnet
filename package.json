@@ -4,11 +4,14 @@
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build",
+    "build": "vue-cli-service build && pio run -t upload && pio run -t uploadfs",
+    "upload": "pio run -t upload",
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
     "core-js": "^3.4.3",
+    "material-design-icons": "^3.0.1",
+    "materialize-css": "^1.0.0-rc.2",
     "vue": "^2.6.10"
   },
   "devDependencies": {
