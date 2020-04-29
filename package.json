@@ -4,8 +4,9 @@
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build && pio run -t upload && pio run -t uploadfs",
     "upload": "pio run -t upload",
+    "uploadfs": "pio run -t uploadfs",
+    "build": "NODE_ENV=production vue-cli-service build && npm run upload && npm run uploadfs",
     "lint": "vue-cli-service lint"
   },
   "dependencies": {

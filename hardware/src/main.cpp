@@ -28,7 +28,7 @@ DNSServer dnsServer;
 Artnet artnet;
 int previousDataLength = 0;
 
-#define LED_PIN 9
+#define LED_PIN 2
 NeoPixelBus<NeoGrbwFeature, NeoEsp32I2s1800KbpsMethod>* rgbw = NULL;
 NeoPixelBus<NeoGrbFeature, NeoEsp32I2s1800KbpsMethod>* rgb = NULL;
 RgbwColor* rgbwColor = NULL;
@@ -56,7 +56,7 @@ static TaskHandle_t userTaskHandle = 0;
 
 void show() {
   if (userTaskHandle == 0) {
-    const TickType_t xMaxBlockTime = pdMS_TO_TICKS(200);
+    const TickType_t xMaxBlockTime = pdMS_TO_TICKS(40);
     // store the handle of the current task, so that the show task can notify it when it's done
     userTaskHandle = xTaskGetCurrentTaskHandle();
     // trigger the show task
@@ -202,6 +202,8 @@ void startServer() {
   });
   server.on("/js/app.js", HTTP_GET,
             [](AsyncWebServerRequest* request) { request->send(SPIFFS, "/js/app.js", "text/javascript"); });
+  server.on("/css/app.css", HTTP_GET,
+            [](AsyncWebServerRequest* request) { request->send(SPIFFS, "/css/app.css", "text/css"); });
   server.on("/settings", HTTP_GET, [](AsyncWebServerRequest* request) {
     settings.clear();
     settings["ssid"] = ssid;
@@ -302,11 +304,11 @@ void onDmxFrame(uint16_t universe, uint16_t length, uint8_t sequence, uint8_t* d
 }
 
 void onSync(IPAddress remoteIP) {
-#if DEBUG || STATS
+#if STATS
   long start = micros();
 #endif
   show();
-#if DEBUG || STATS
+#if STATS
   Serial.print("Sync delta: ");
   Serial.println((start - lastSync) / 1000);
   lastSync = start;
