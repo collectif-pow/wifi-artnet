@@ -1,121 +1,84 @@
 <template>
   <div>
-    <nav>
-      <div class="nav-wrapper centered">
-        <h1 class="title">
+    <b-navbar type="is-primary" transparent :mobile-burger="false">
+      <template slot="brand">
+        <b-navbar-item>
           WiFi node by
-          <a href="https://pow.cool" target="_bank">pow.cool</a>
-        </h1>
-      </div>
-    </nav>
-    <div class="container" v-if="loaded">
-      <form class="col s12 settings" @submit.prevent="updateSettings">
-        <div class="input-field col s12">
-          <i class="material-icons prefix">wifi</i>
-          <input id="ssid" type="text" v-model="ssid" />
-          <label for="ssid" :class="ssid && 'active'">SSID</label>
-        </div>
-        <div class="input-field col s12">
-          <i class="material-icons prefix" @click.prevent="visible = !visible">
-            {{ visible ? 'visibility_off' : 'visibility' }}
-          </i>
-          <input
-            id="password"
-            :type="visible ? 'text' : 'password'"
+          <a class="pow" href="https://pow.cool" target="_blank">pow.cool</a>
+        </b-navbar-item>
+      </template>
+    </b-navbar>
+    <div class="container">
+      <form @submit.prevent="updateSettings">
+        <b-field label="SSID">
+          <b-input v-model="ssid" required icon="wifi"></b-input>
+        </b-field>
+        <b-field label="Password">
+          <b-input
             v-model="password"
-          />
-          <label for="password" :class="password && 'active'">Password</label>
-        </div>
-        <div class="input-field col s12">
-          <i class="material-icons prefix">edit</i>
-          <input id="nodeName" type="text" v-model="nodeName" />
-          <label for="nodeName" :class="nodeName && 'active'">Node name</label>
-        </div>
-        <div class="input-field col s12">
-          <i class="material-icons prefix">straighten</i>
-          <input
-            id="startUniverse"
-            type="number"
-            :min="startUniverseMin"
+            icon="key"
+            type="password"
+            password-reveal
+          ></b-input>
+        </b-field>
+        <b-field label="Node name">
+          <b-input v-model="nodeName" required icon="pencil"></b-input>
+        </b-field>
+        <b-field label="Start Universe">
+          <b-numberinput
             v-model="startUniverse"
-            @change="handleStartUniverseChange"
-          />
-          <label
-            for="startUniverse"
-            :class="typeof startUniverse === 'number' && 'active'"
-          >
-            Start Universe
-          </label>
-        </div>
-        <div class="input-field col s12">
-          <i class="material-icons prefix">straighten</i>
-          <input
-            id="pixelCount"
-            type="number"
+            required
+            :min="startUniverseMin"
+          ></b-numberinput>
+        </b-field>
+        <b-field label="ArtSync">
+          <b-switch v-model="sync" :rounded="false" size="is-medium">
+            {{ sync ? 'Yes' : 'No' }}
+          </b-switch>
+        </b-field>
+        <b-field label="Pixel Count">
+          <b-numberinput
+            v-model="pixelCount"
+            required
             :min="pixelCountMin"
             :max="pixelCountMax"
-            v-model="pixelCount"
-            @change="handlePixelCountChange"
-          />
-          <label
-            for="pixelCount"
-            :class="typeof pixelCount === 'number' && 'active'"
-          >
-            Pixel Count
-          </label>
-        </div>
-        <div class="input-field col s12">
-          <i class="material-icons prefix">wb_incandescent</i>
-          <select v-model="pixelSize" ref="select">
-            <option disabled :value="undefined">Please choose</option>
+          ></b-numberinput>
+        </b-field>
+        <b-field label="Pixel Type">
+          <b-select v-model="pixelSize" required placeholder="Please choose">
             <option :value="4">RGBW</option>
             <option :value="3">RGB</option>
-          </select>
-          <label>Pixel type</label>
-        </div>
-
-        <div class="row col s12">
-          <button
-            class="btn waves-effect waves-light col s4 offset-s1"
-            type="submit"
-            name="action"
-            :disabled="!nodeName"
-          >
+          </b-select>
+        </b-field>
+        <div class="buttons">
+          <b-button type="is-primary" native-type="submit" :disabled="!valid">
             Update
-          </button>
-          <button
-            class="btn waves-effect waves-light red col s4 offset-s2"
-            @click.prevent="reset"
-          >
+          </b-button>
+          <b-button type="is-danger" @click.prevent="reset" :disabled="!valid">
             Reset
-          </button>
+          </b-button>
         </div>
       </form>
     </div>
-    <div class="loader" v-else>
-      <h2>Loading settings</h2>
-      <h2>...</h2>
-    </div>
-    <div class="toast-layer" v-if="toast" />
+    <b-loading class="loader-layer" :active="!loaded"></b-loading>
+    <b-loading class="toast-layer" :active="toast"></b-loading>
   </div>
 </template>
 
 <script>
-import M from 'materialize-css'
-
 export default {
   name: 'App',
   data: () => ({
-    visible: false,
+    valid: true,
     toast: false,
-    pixelCountMin: 10,
+    pixelCountMin: 1,
     pixelCountMax: 300,
     startUniverseMin: 0,
     loaded: false,
     serverUrl:
       process.env.NODE_ENV === 'production'
         ? window.location.href
-        : 'http://192.168.43.15/',
+        : 'http://localhost:3000/',
     // v-model default values
     // will be overwritten by the settings api call
     ssid: '',
@@ -124,29 +87,30 @@ export default {
     pixelSize: 4,
     pixelCount: 60,
     startUniverse: 0,
+    sync: true,
   }),
   mounted() {
-    this.init().then(() => {
-      M.FormSelect.init(this.$refs.select)
-    })
+    this.init()
+  },
+  watch: {
+    startUniverse() {
+      this.validate()
+    },
+    nodeName() {
+      this.validate()
+    },
   },
   methods: {
-    handlePixelCountChange(e) {
-      const newValue = parseInt(e.target.value, 10)
-      if (newValue) {
-        if (newValue < this.pixelCountMin) this.pixelCount = this.pixelCountMin
-        else if (newValue > this.pixelCountMax)
-          this.pixelCount = this.pixelCountMax
-        else this.pixelCount = newValue
-      }
-    },
-    handleStartUniverseChange(e) {
-      const newValue = parseInt(e.target.value, 10)
-      if (newValue) {
-        if (newValue < this.startUniverseMin)
-          this.startUniverse = this.startUniverseMin
-        else this.startUniverse = newValue
-      }
+    validate() {
+      if (
+        this.ssid &&
+        this.nodeName &&
+        this.startUniverse !== null &&
+        this.pixelCount > 0 &&
+        this.pixelSize >= 3
+      )
+        this.valid = true
+      else this.valid = false
     },
     async init() {
       const res = await fetch(`${this.serverUrl}settings`)
@@ -157,6 +121,7 @@ export default {
         pixelSize,
         pixelCount,
         startUniverse,
+        sync,
       } = await res.json()
       this.ssid = ssid
       this.password = password
@@ -164,7 +129,10 @@ export default {
       this.pixelSize = pixelSize
       this.pixelCount = pixelCount
       this.startUniverse = startUniverse
-      this.loaded = true
+      this.sync = sync
+      setTimeout(() => {
+        this.loaded = true
+      }, 1000)
     },
     async reset() {
       this.ssid = ''
@@ -173,6 +141,7 @@ export default {
       this.pixelSize = 4
       this.pixelCount = 60
       this.startUniverse = 0
+      this.sync = true
       await this.updateSettings()
     },
     async updateSettings() {
@@ -189,63 +158,49 @@ export default {
           pixelSize: this.pixelSize,
           pixelCount: this.pixelCount,
           startUniverse: this.startUniverse,
+          sync: this.sync,
         }),
       })
       this.toast = true
-      M.toast({
-        html: `${this.nodeName} will restart! (this page will reload in 15s)`,
-        displayLength: 15000,
-        completeCallback: () => {
-          window.location.reload()
-        },
+      this.$buefy.toast.open({
+        duration: 20000,
+        message: `${this.nodeName} will restart! (this page will reload in 15s)`,
+        position: 'is-bottom',
+        type: 'is-danger',
       })
+      setTimeout(() => {
+        window.location.reload()
+      }, 15000)
     },
   },
 }
 </script>
 
 <style lang="css" scoped>
-h1 > a {
+.pow {
+  color: #ffffff;
+  text-decoration: underline;
   font-weight: bold;
+  margin-left: 5px;
 }
-.centered {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-.title {
-  font-size: 32px;
-  font-weight: 100;
-  margin: 0;
-}
-.settings {
+.container {
   margin-top: 30px;
+  padding: 0 10px;
 }
-.loader {
-  position: absolute;
-  width: 100vw;
-  height: calc(100vh - 56px);
-  top: 56px;
+.buttons {
   display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
+  justify-content: flex-end;
+}
+.loader-layer {
+  background-color: #ffffff;
+  top: 52px;
 }
 .toast-layer {
   position: absolute;
   width: 100vw;
-  height: calc(100vh - 56px);
-  top: 56px;
+  height: 100vh;
+  top: 0;
   background-color: rgba(255, 255, 255, 0.7);
   z-index: 1;
-}
-
-@media (min-width: 601px) {
-  .loader,
-  .toast-layer {
-    height: calc(100vh - 64px);
-    top: 64px;
-  }
 }
 </style>

@@ -10,7 +10,7 @@
 
 #define DEBUG 0
 #define STATS 0
-#define MAX_ATTEMPTS 20
+#define MAX_ATTEMPTS 10
 
 Preferences preferences;
 String ssid;
@@ -18,8 +18,9 @@ String password;
 String nodeName;
 int pixelSize;
 int pixelCount;
-int totalChannels;
 int startUniverse;
+bool sync;
+int totalChannels;
 StaticJsonDocument<256> settings;
 
 AsyncWebServer server(80);
@@ -116,6 +117,7 @@ void readNVS() {
   pixelSize = preferences.getInt("pixelSize", 4);
   pixelCount = preferences.getInt("pixelCount", 60);
   startUniverse = preferences.getInt("startUniverse", 0);
+  sync = preferences.getBool("sync", true);
   totalChannels = pixelSize * pixelCount;
 #if DEBUG
   Serial.println(ssid);
@@ -212,6 +214,7 @@ void startServer() {
     settings["pixelSize"] = pixelSize;
     settings["pixelCount"] = pixelCount;
     settings["startUniverse"] = startUniverse;
+    settings["sync"] = sync;
     String res;
     serializeJson(settings, res);
     request->send(200, "application/json", res);
@@ -225,6 +228,7 @@ void startServer() {
         preferences.putInt("pixelSize", jsonObj["pixelSize"].as<int>());
         preferences.putInt("pixelCount", jsonObj["pixelCount"].as<int>());
         preferences.putInt("startUniverse", jsonObj["startUniverse"].as<int>());
+        preferences.putBool("sync", jsonObj["sync"].as<bool>());
         request->send(201, "application/json", "{\"status\":\"ok\"}");
         delay(1000);
         ESP.restart();
@@ -300,6 +304,7 @@ void onDmxFrame(uint16_t universe, uint16_t length, uint8_t sequence, uint8_t* d
 #if DEBUG
   Serial.println();
 #endif
+  if (!sync) show();
   previousDataLength = length;
 }
 
@@ -307,7 +312,7 @@ void onSync(IPAddress remoteIP) {
 #if STATS
   long start = micros();
 #endif
-  show();
+  if (sync) show();
 #if STATS
   Serial.print("Sync delta: ");
   Serial.println((start - lastSync) / 1000);

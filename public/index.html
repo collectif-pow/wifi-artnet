@@ -13,37 +13,46 @@
     <title>wifi-artnet</title>
     <style>
       @font-face {
-        font-family: 'Material Icons';
-        font-style: normal;
-        font-weight: 400;
-        src: local('Material Icons'), local('MaterialIcons-Regular'),
-          url(/fonts/MaterialIcons.woff2) format('woff2');
-      }
-
-      .material-icons {
-        font-family: 'Material Icons';
+        font-family: 'Material Design Icons';
+        src: url('/fonts/MaterialIcons.woff2') format('woff2');
         font-weight: normal;
         font-style: normal;
-        font-size: 24px; /* Preferred icon size */
+      }
+
+      .mdi:before,
+      .mdi-set {
         display: inline-block;
-        line-height: 1;
-        text-transform: none;
-        letter-spacing: normal;
-        word-wrap: normal;
-        white-space: nowrap;
-        direction: ltr;
-
-        /* Support for all WebKit browsers. */
+        font: normal normal normal 24px/1 'Material Design Icons';
+        font-size: inherit;
+        text-rendering: auto;
+        line-height: inherit;
         -webkit-font-smoothing: antialiased;
-        /* Support for Safari and Chrome. */
-        text-rendering: optimizeLegibility;
-
-        /* Support for Firefox. */
         -moz-osx-font-smoothing: grayscale;
-
-        /* Support for IE. */
-        -webkit-font-feature-settings: 'liga';
-        font-feature-settings: 'liga';
+      }
+      .mdi-24px.mdi-set,
+      .mdi-24px.mdi:before {
+        font-size: 24px;
+      }
+      .mdi-minus::before {
+        content: '\F0374';
+      }
+      .mdi-plus::before {
+        content: '\F0415';
+      }
+      .mdi-eye::before {
+        content: '\F0208';
+      }
+      .mdi-eye-off::before {
+        content: '\F0209';
+      }
+      .mdi-wifi::before {
+        content: '\F05A9';
+      }
+      .mdi-key::before {
+        content: '\F0306';
+      }
+      .mdi-pencil::before {
+        content: '\F03EB';
       }
     </style>
   </head>
