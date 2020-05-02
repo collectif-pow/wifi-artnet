@@ -191,16 +191,12 @@ export default {
   display: flex;
   justify-content: flex-end;
 }
-.loader-layer {
+.loader-layer,
+.toast-layer {
   background-color: #ffffff;
-  top: 52px;
+  z-index: 5;
 }
 .toast-layer {
-  position: absolute;
-  width: 100vw;
-  height: 100vh;
-  top: 0;
-  background-color: rgba(255, 255, 255, 0.7);
-  z-index: 1;
+  opacity: 0.7;
 }
 </style>
