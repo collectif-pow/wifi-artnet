@@ -1,5 +1,9 @@
 # wifi-artnet
 
+Control "smart LEDs" (ws281x and sk6812) through Art-Net over WiFi!
+
+![v1](./docs/wifi-artnet_v1.jpg)
+
 ## Prerequisites
 
 - platformio cli: https://docs.platformio.org/en/latest/core/installation.html
