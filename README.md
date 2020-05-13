@@ -1,8 +1,10 @@
 # wifi-artnet
 
-Control "smart LEDs" (ws281x and sk6812) through Art-Net over WiFi!
+Control "smart LEDs" (ws281x and sk6812) through Art-Net over WiFi! The board embeds a web server to configure it.
 
 ![v1](./docs/wifi-artnet_v1.jpg)
+
+![ui](./docs/ui.png)
 
 ## Prerequisites
 
