@@ -6,7 +6,7 @@
     "serve": "vue-cli-service serve",
     "upload": "pio run -t upload",
     "uploadfs": "pio run -t uploadfs",
-    "build": "NODE_ENV=production vue-cli-service build && npm run upload && npm run uploadfs",
+    "build": "cross-env NODE_ENV=production vue-cli-service build && npm run upload && npm run uploadfs",
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
@@ -21,6 +21,7 @@
     "@vue/eslint-config-prettier": "^5.0.0",
     "babel-eslint": "^10.0.3",
     "cors": "^2.8.5",
+    "cross-env": "^7.0.2",
     "eslint": "^5.16.0",
     "eslint-plugin-prettier": "^3.1.1",
     "eslint-plugin-vue": "^5.0.0",
